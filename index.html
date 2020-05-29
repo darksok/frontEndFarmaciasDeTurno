@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Farmacias de Turno en Santiago</title>
+		<script src="js/jquery-3.5.1.js"></script>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" />
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	</head>
+	<body>
+		<div class="container">
+			<div class="table-responsive">
+				<h1>Farmacias de Turno en Santiago</h1>
+				<table class="table">
+					<tr>
+						<td>Comuna</td><td><select id="opComuna" class="form-control"></select> </td>
+					</tr>
+					<tr>
+						<td>Local</td><td><input class="form-control" type="text" name="" id="localNombre"></td>
+					</tr>
+					<tr>
+						<td><button class="btn btn-secondary" id="limpiar">Limpiar Filtro</button> <button class="btn btn-primary" id="filtrar">Filtrar</button></td><td></td>
+					</tr>
+				</table>
+				<table class="table table-bordered table-striped" id="farmacias-table">
+					<tr>
+						<th>Nombre de Local</th>
+						<th>Direccion</th>
+						<th>Telefono</th>
+						<th>Latitud</th>
+						<th>Longitud</th>
+					</tr>
+				</table>
+			</div>
+		</div>
+	</body>
+</html>
+
+<script>
+
+var apiFarmacias = "http://127.0.0.1:8085/farmaciasturno";
+var apiComunas = "https://midastest.minsal.cl/farmacias/maps/index.php/utilidades/maps_obtener_comunas_por_regiones";
+var comunaVal = null;
+var localVal = null;
+
+$(document).ready(function(){
+
+
+	var requestComunas = $.ajax({
+		url: apiComunas,
+		method: "POST",
+		data: { reg_id : "7" },
+		dataType: "html"
+	});
+	requestComunas.done(function(data){
+		$('#opComuna').html(data);
+	});
+	requestComunas.fail(function( jqXHR, textStatus ) {
+  		alert( "Request failed: " + textStatus );
+	});
+
+	var objRequest = { comuna: comunaVal, local: localVal };
+	var requestfarmacias = $.ajax({
+		url: apiFarmacias,
+		method: "POST",
+		data: JSON.stringify(objRequest),
+		dataType: "json",
+		crossDomain: true,
+		contentType: "application/json"
+	});
+	requestfarmacias.done(function(data){
+		var insert = '<table class="table table-bordered table-striped" id="farmacias-table"><tr><th>Nombre de Local</th><th>Direccion</th><th>Telefono</th><th>Latitud</th><th>Longitud</th></tr>';
+		$.each(data, function(index, item) {
+			insert += '<tr><td>' + item.local_nombre + '</td>';
+			insert += '<td>' + item.local_direccion + '</td>';
+			insert += '<td>' + item.local_telefono + '</td>';
+			insert += '<td>' + item.local_lat + '</td>';
+			insert += '<td>' + item.local_lng + '</td></tr></table>';
+		});
+		$('#farmacias-table').html(insert);
+	});
+	requestfarmacias.fail(function( jqXHR, textStatus ) {
+  		alert( "Request failed: " + textStatus );
+	});
+	
+	$("#opComuna").change(function(){
+		comunaVal = $(this). children("option:selected").text();
+	});
+
+	$("#localNombre").change(function(){
+		localVal = $(this).val();
+	});
+});
+
+$('#filtrar').on('click', function(){
+	var objRequest = { comuna: comunaVal, local: localVal };
+	var requestfarmacias = $.ajax({
+		url: apiFarmacias,
+		method: "POST",
+		data: JSON.stringify(objRequest),
+		dataType: "json",
+		crossDomain: true,
+		contentType: "application/json"
+	});
+	requestfarmacias.done(function(data){
+		var insert = '<table class="table table-bordered table-striped" id="farmacias-table"><tr><th>Nombre de Local</th><th>Direccion</th><th>Telefono</th><th>Latitud</th><th>Longitud</th></tr>';
+		$.each(data, function(index, item) {
+			insert += '<tr><td>' + item.local_nombre + '</td>';
+			insert += '<td>' + item.local_direccion + '</td>';
+			insert += '<td>' + item.local_telefono + '</td>';
+			insert += '<td>' + item.local_lat + '</td>';
+			insert += '<td>' + item.local_lng + '</td></tr></table>';
+		});
+		$('#farmacias-table').html(insert);
+	});
+	requestfarmacias.fail(function( jqXHR, textStatus ) {
+  		alert( "Request failed: " + textStatus );
+	});
+});
+
+$('#limpiar').on('click', function(){
+	$("#opComuna").val($("#opComuna option:first").val());
+	$("#localNombre").val("");
+
+	var objRequest = { comuna: null, local: null };
+	var requestfarmacias = $.ajax({
+		url: apiFarmacias,
+		method: "POST",
+		data: JSON.stringify(objRequest),
+		dataType: "json",
+		crossDomain: true,
+		contentType: "application/json"
+	});
+	requestfarmacias.done(function(data){
+		var insert = '<table class="table table-bordered table-striped" id="farmacias-table"><tr><th>Nombre de Local</th><th>Direccion</th><th>Telefono</th><th>Latitud</th><th>Longitud</th></tr>';
+		$.each(data, function(index, item) {
+			insert += '<tr><td>' + item.local_nombre + '</td>';
+			insert += '<td>' + item.local_direccion + '</td>';
+			insert += '<td>' + item.local_telefono + '</td>';
+			insert += '<td>' + item.local_lat + '</td>';
+			insert += '<td>' + item.local_lng + '</td></tr></table>';
+		});
+		$('#farmacias-table').html(insert);
+	});
+	requestfarmacias.fail(function( jqXHR, textStatus ) {
+  		alert( "Request failed: " + textStatus );
+	});
+});
+	
+</script>
